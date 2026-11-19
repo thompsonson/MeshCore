@@ -1,4 +1,5 @@
 #include "EnvironmentSensorManager.h"
+#include <math.h>
 
 #include <Wire.h>
 
@@ -693,6 +694,12 @@ bool EnvironmentSensorManager::querySensors(uint8_t requester_permissions, Cayen
       _active_sensors[i].query(next_available_channel, _active_sensors[i].sub_channel, telemetry);
       next_available_channel++;
     }
+  }
+
+  if (requester_permissions & TELEM_PERM_LOCATION && gps_active) {
+    // 6-decimal position in microdegrees, rounded; offset so the unsigned field holds S/W values too
+    telemetry.addGenericSensorU32(next_available_channel++, (uint32_t) llround((node_lat +  90.0) * 1e6));
+    telemetry.addGenericSensorU32(next_available_channel++, (uint32_t) llround((node_lon + 180.0) * 1e6));
   }
 
   return true;
